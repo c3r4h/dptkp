@@ -1,0 +1,12 @@
+[
+  { "id": "morning", "name": "Morning Spot", "color": "#facc15" },
+  { "id": "artisan", "name": "Artisan", "color": "#7c3aed" },
+  { "id": "kedai", "name": "Kedai", "color": "#16a34a" },
+  { "id": "reading", "name": "Reading Friendly", "color": "#0ea5e9" },
+  { "id": "work", "name": "WFC", "color": "#2563eb" },
+  { "id": "cafe", "name": "Cafe", "color": "#f59e0b" },
+  { "id": "senja", "name": "Senja", "color": "#ea580c" },
+  { "id": "community", "name": "Community", "color": "#db2777" },
+  { "id": "industry", "name": "Industry", "color": "#999999" },
+  { "id": "resto", "name": "Restoran", "color": "#dc2626" }
+]

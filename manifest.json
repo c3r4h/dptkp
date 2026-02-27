@@ -1,0 +1,15 @@
+{
+  "name": "Dipetakopi - Kurasi Lokasi Kopi",
+  "short_name": "Dipetakopi",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

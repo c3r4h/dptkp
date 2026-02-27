@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dipetakopi - Peta Interaktif Kopi di Yogyakarta</title>
+
+  <meta name="description" content="Dipetakopi - Temukan lokasi: cafe, restoran, dan tempat wisata dengan filter kategori, car-friendly, pencarian, dan rute interaktif." />
+  <meta name="theme-color" content="#16a34a" />
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" sizes="192x192" href="android-chrome-192x192.png">
+  <link rel="icon" sizes="512x512" href="android-chrome-512x512.png">
+  <meta name="msapplication-TileImage" content="mstile-150x150.png">
+  <meta name="msapplication-TileColor" content="#000000">
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- Marker Cluster -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+  <!-- Custom CSS -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+    body, input, select {
+      font-family: 'Nunito', sans-serif;
+      font-size: 90%;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100">
+
+  <!-- Mobile Navbar -->
+  <nav class="md:hidden flex items-center bg-white shadow p-2 fixed w-full z-50">
+    <img src="apple-touch-icon.png" alt="Logo Kopikita" class="w-8 h-8 rounded-lg mr-2">
+    <span class="font-bold text-lg">Dipetakopi</span>
+    <button id="toggleBtn" class="ml-auto bg-white text-gray-700 px-3 py-1 rounded hover:bg-gray-100">☰</button>
+  </nav>
+
+  <div class="flex flex-row min-h-screen overflow-hidden pt-12 md:pt-0">
+
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="bg-white w-full sm:w-80 shadow-lg p-4 overflow-y-auto fixed z-50 sm:h-full 
+        transform md:translate-x-0 -translate-x-full transition-transform duration-300 flex flex-col justify-between"
+      style="min-height: calc(100vh - 50px);"
+      >
+
+      <div>
+        <div class="hidden md:flex items-center gap-3 mb-4">
+          <img src="apple-touch-icon.png" alt="Logo Kopikita" class="w-8 h-8 rounded-lg">
+          <h1 class="text-xl font-bold">Dipetakopi</h1>
+        </div>
+
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Cari..."
+          class="w-full border p-2 mb-2 rounded filterInput"
+        />
+
+        <select
+          id="categoryFilter"
+          class="w-full bg-white border p-2 mb-2 rounded filterInput"
+        >
+          <option value="">Semua Kategori</option>
+        </select>
+
+        <label class="flex items-center mb-1">
+          <input type="checkbox" id="kopiTubruk" class="filterInput mr-2" />
+          Kopi Tubruk
+        </label>
+        <label class="flex items-center mb-1">
+          <input type="checkbox" id="acFilter" class="filterInput mr-2" />
+          Indoor AC
+        </label>
+        <label class="flex items-center mb-1">
+          <input type="checkbox" id="smokingAC" class="filterInput mr-2" />
+          Smoking AC
+        </label>
+        <label class="flex items-center mb-1">
+          <input type="checkbox" id="parkingFilter" class="filterInput mr-2" />
+          Car friendly
+        </label>
+        <label class="flex items-center mb-1">
+          <input type="checkbox" id="sortNearest" class="filterInput mr-2" />
+          Sort by Nearest
+        </label>
+
+        <hr class="border-t border-gray-200 my-4" />
+
+        <h3 class="font-bold text-lg mb-2">Result</h3>
+        <div id="locationList" style="max-height: calc(100vh - 440px); overflow: hidden;"></div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-4">
+        <button
+          id="aboutBtn"
+          class="w-full border border-gray-400 text-gray-700 rounded p-1 text-xs mb-2 hover:bg-gray-100"
+        >
+          About Us
+        </button>
+        <p class="text-center text-xs text-gray-500">2026 - Made with love by <b>Dipetakopi</b></p>
+      </div>
+    </aside>
+
+    <!-- Map -->
+    <main id="mapWrapper" class="flex-1 relative w-full z-0 sm:ml-80">
+      <div id="map" class="w-full h-full"></div>
+    </main>
+  </div>
+
+  <!-- About modal -->
+  <div
+    id="aboutModal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"
+  >
+    <div class="bg-white rounded w-full sm:w-80 p-6 m-6 relative">
+      <h2 class="text-lg font-bold mb-2">About Us</h2>
+      <div class="text-sm text-gray-700">
+        <p class="mb-3"><b>Dipetakopi</b> adalah platform kurasi lokasi minum kopi dan tempat temu darat kolega. Awalnya, platform ini berfokus pada informasi tempat ngopi dengan parkiran yang ramah mobil di Yogyakarta, khususnya area Bantul dan sekitarnya. Kini, Dipetakopi juga menghadirkan informasi seputar kopi tubruk dan area smoking ber-AC.</p>
+
+        <p class="mb-3">Informasi yang kami sajikan bersumber dari pengalaman pribadi, rekomendasi teman, serta kontribusi komunitas. Kami berharap dapat membantu para pecinta kopi menemukan tempat yang nyaman dan sesuai dengan kebutuhan mereka.</p>
+
+        <p>Terima kasih telah menggunakan <b>Dipetakopi</b>!</p>
+        <p class="mt-4 text-xs border-t border-gray-200 pt-4 leading-loose">
+          <a href="/dipetakopi-20260227101014.json" class="text-blue-700 underline hover:no-underline">
+            Unduh data mentahan di sini</a>
+          <br>
+          <a href="https://www.instagram.com/dipetakopi" class="text-blue-700 underline hover:no-underline">
+            Kirim pesan langsung ke Instagram @dipetakopi</a>
+          <br>
+          <a href="https://dukung.cerah.net" class="text-blue-700 underline hover:no-underline">
+            Beri semangat dan dukungan materil</a>
+          <br>
+          Semoga makin laris semuanya.
+        </p>
+      </div>
+      <button
+        id="closeModal"
+        class="text-xl absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- Location details modal (bottom quarter) -->
+  <div
+    id="locModal"
+    class="sm:ml-80 fixed inset-x-0 bottom-0 h-3/8 bg-white shadow-lg z-10 transform translate-y-full transition-transform duration-300"
+  >
+    <div class="relative h-full overflow-auto p-4 shadow">
+      <button
+        id="closeLocModal"
+        class="text-xl absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+      >
+        ✕
+      </button>
+      <div id="locModalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    const aboutBtn = document.getElementById('aboutBtn');
+    const aboutModal = document.getElementById('aboutModal');
+    const closeModal = document.getElementById('closeModal');
+
+    aboutBtn.addEventListener('click', () => {
+      aboutModal.classList.remove('hidden');
+    });
+
+    closeModal.addEventListener('click', () => {
+      aboutModal.classList.add('hidden');
+    });
+
+    // Klik di luar modal untuk menutup
+    aboutModal.addEventListener('click', (e) => {
+      if(e.target === aboutModal) {
+        aboutModal.classList.add('hidden');
+      }
+    });
+  </script>
+
+  <script src="script.js?dipetakopi-20260227101014"></script>
+</body>
+</html>
